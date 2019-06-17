@@ -1,22 +1,21 @@
 {
+    "name": "insphpect/staticanalysis",
+    "description": "A set of static analysis tools",
+    "license": "BSD-2-Clause",
+    "homepage": "https://github.com/Insphpect/StaticAnalysis",
+    "authors": [
+        {
+            "name": "Tom Butler",
+            "email": "tom@r.je"
+        }
+    ],
     "require": {
-        "level-2/transphporm": "^1.3",
-        "level-2/dice": "*",
-        "level-2/axel": "*",
-        "level-2/simplecache": "*",
-        "level-2/router-modulejson": "*",
-        "level-2/router": "*"
+        "php": ">=7.0.0"
     },
-    "config": {
-    	"vendor-dir": "./framework/Lib"
+    "require-dev": {
+        "phpunit/phpunit": "^5.7.20"
     },
     "autoload": {
-    	"psr-4": {
-            "Config\\": "./framework/Conf",
-            "Insphpect\\": "./framework/Domain",
-            "Insphpect\\Insphpect": "./framework/Domain/Insphpect",
-            "Insphpect\\Module": "./framework/Modules"
-        }
-    },
-    "minimum-stability": "dev"
+        "psr-4": {"Insphpect\\StaticAnalysis\\": "src/"}
+    }
 }
