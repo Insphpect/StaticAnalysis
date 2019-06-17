@@ -1,0 +1,22 @@
+{
+    "require": {
+        "level-2/transphporm": "^1.3",
+        "level-2/dice": "*",
+        "level-2/axel": "*",
+        "level-2/simplecache": "*",
+        "level-2/router-modulejson": "*",
+        "level-2/router": "*"
+    },
+    "config": {
+    	"vendor-dir": "./framework/Lib"
+    },
+    "autoload": {
+    	"psr-4": {
+            "Config\\": "./framework/Conf",
+            "Insphpect\\": "./framework/Domain",
+            "Insphpect\\Insphpect": "./framework/Domain/Insphpect",
+            "Insphpect\\Module": "./framework/Modules"
+        }
+    },
+    "minimum-stability": "dev"
+}
