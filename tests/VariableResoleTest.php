@@ -167,4 +167,51 @@ class VariableResolveTest extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals('new \Something("Foo", {ARG1})', $result);
 
 	}
+
+	public function testArg2() {
+
+		$code = '<?php
+class TestClass implements Foo {
+	private $a;
+	private $b;
+
+	public function __construct($a) {
+		$ff = 1;
+		$this->b = new RequiresObject($a);
+	}
+}';
+
+
+
+		$resolver = new \Insphpect\StaticAnalysis\VariableResolve();
+
+		$result = $resolver->resolve($code, '$a', 10);
+
+		$this->assertEquals('{ARG0}', $result);
+
+	}
+
+
+		public function testArgDefaultValue() {
+
+		$code = '<?php
+class TestClass implements Foo {
+	private $a;
+	private $b;
+
+	public function __construct($a = 1) {
+		$ff = 1;
+		$this->b = new RequiresObject($a);
+	}
+}';
+
+
+
+		$resolver = new \Insphpect\StaticAnalysis\VariableResolve();
+
+		$result = $resolver->resolve($code, '$a', 10);
+
+		$this->assertEquals('{ARG0}?1', $result);
+
+	}
 }

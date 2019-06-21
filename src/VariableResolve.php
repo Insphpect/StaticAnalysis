@@ -18,7 +18,7 @@ class VariableResolve {
 		//Get the arguments of containing function, if there are any
 		$arguments = $this->getArguments($tokens);
 
-		$tokens = $tokens->end();
+		$tokens = $this->getFunctionBody($tokens)->end();
 		$val = '';
 
 		while ($tokens = $tokens->prev()) {
@@ -30,21 +30,38 @@ class VariableResolve {
 					$val = $this->getAssignmentVal($assignment, $arguments) . $val;
 
 					//Keep going back until the previous expression
-					while ($tokens->string() != ';' && $tokens = $tokens->prev());
+					while ($tokens->string() != ';' && $tokens->string() != '{' && $tokens = $tokens->prev());
 				}
 			}
 		}
 
 		if ($val == null) {
-			$val = '{ARG' . $this->getArgNum($variable, $arguments) . '}';
+			$argNum = $this->getArgNum($variable, $arguments);
+			$val = '{ARG' . $argNum . '}';
+
+			//If there is a default value set, return it e.g. {ARG2}?2
+			if (isset($arguments[$argNum][1])) {
+				$val .= '?' . $arguments[$argNum][1];
+			}
+
 		}
 
 		return $val;
 	}
 
+	private function getFunctionBody($tokens) {
+		$tokens = $tokens->end();
+		while ($tokens = $tokens->prev()) {
+			if ($tokens->is('T_FUNCTION')) {
+				return $tokens->toNext('{')->splice();
+			}
+		}
+
+		return $tokens;
+	}
+
 	private function getAssignment(Tokens $tokens) {
 		$tokens = $tokens->prev()->splice()->toNext(';')->splice(Tokens::REMOVE_AFTER);
-
 
 		$equals = $tokens->toNext('=');
 
@@ -73,13 +90,11 @@ class VariableResolve {
 
 	private function getArgNum($var, $arguments) {
 		for ($i = 0; $i < count($arguments); $i++) {
-			if ($arguments[$i] == $var) return $i;
+			if ($arguments[$i][0] == $var) return $i;
 		}
 
 		return 0;
 	}
-
-
 
 
 
@@ -101,9 +116,26 @@ class VariableResolve {
 	private function getVariables(Tokens $tokens): array {
 		$variables = [];
 
-		while ($tokens = $tokens->next()) {
+		while ($tokens && $tokens = $tokens->next()) {
 			if ($tokens->is('T_VARIABLE')) {
-				$variables[] = $tokens->string();
+				$variable = [$tokens->string()];
+
+				$tokens = $tokens->next();
+				while ($tokens && $tokens->is('T_WHITESPACE')) $tokens = $tokens->next();
+				//Assignment
+				if ($tokens && $tokens->is('=')) {
+					$str = '';
+					while ($tokens && $tokens = $tokens->next()) {
+						if ($tokens->is(',') || $tokens->is(')')) break;
+
+						$str .= $tokens->string();
+					}
+
+					$variable[] = trim($str);
+
+				}
+
+				$variables[] = $variable;
 			}
 		}
 

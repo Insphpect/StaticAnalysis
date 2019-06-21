@@ -28,6 +28,33 @@ class Tokens {
 		return null;
 	}
 
+	public function extractNested(): self {
+		$close = null;
+		$open = $this->string();
+
+		if ($open == '(') $close = ')';
+		else if ($open == '{') $close =  '}';
+		else if ($open == '[') $close =  ']';
+
+		if ($close == null) throw new \Exception('Cannot nest on non-bracket: ' . $this->string() );
+
+		$tokens = $this->splice();
+		$depth = 1;
+		//Find the corresponding closing brace and return a subset of tokens
+		while ($tokens = $tokens->next()) {
+			if ($tokens->is('(')) $depth++;
+			else if ($tokens->is(')')) $depth--;
+
+			if ($depth == 0) {
+				$tokens = $tokens->splice(\Insphpect\StaticAnalysis\Tokens::REMOVE_AFTER);
+				break;
+			}
+		}
+
+		return $tokens;
+
+	}
+
 	public function splice(int $dir = self::REMOVE_BEFORE): self {
 		if ($dir == self::REMOVE_AFTER) {
 			$spliced = array_splice($this->tokens, 0, $this->i);
