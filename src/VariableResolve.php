@@ -17,7 +17,34 @@ class VariableResolve {
 
 		//Get the arguments of containing function, if there are any
 		$arguments = $this->getArguments($tokens);
+		if (strpos($variable, '->') !== false) return $this->resolveProperty($tokens, $variable, $arguments);
+		else return $this->resolveLocal($arguments, $tokens, $variable);
+	}
 
+	private function resolveProperty($tokens, $variable, $arguments) {
+		$varTokens = token_get_all('<?php ' . trim($variable));
+		$variableName = $varTokens[1][1];
+		$propertyName = $varTokens[3][1];
+
+		$tokens = $tokens->end();
+		while ($tokens = $tokens->prev()) {
+			//var_dump($tokens->string());
+			if ($tokens->string() == $propertyName &&
+				$tokens->prev()->prev()->string() == $variableName)  {
+				$assignment = $this->getAssignment($tokens);
+				if ($assignment) {
+					return $this->getAssignmentVal($assignment, $arguments);
+				}
+			}
+			else if ($variableName == '$this' && $tokens->string() == '$' . $propertyName && in_array($tokens->prev()->prev()->string(), ['public', 'private', 'protected'])) {
+				$assignment = $this->getAssignment($tokens);
+
+				return $this->getAssignmentVal($assignment, []);
+			}
+		}
+	}
+
+	private function resolveLocal($arguments, $tokens, $variable) {
 		$tokens = $this->getFunctionBody($tokens)->end();
 		$val = '';
 
@@ -37,12 +64,14 @@ class VariableResolve {
 
 		if ($val == null) {
 			$argNum = $this->getArgNum($variable, $arguments);
-			$val = '{ARG' . $argNum . '}';
+			$val = '{ARG' . $argNum;
 
 			//If there is a default value set, return it e.g. {ARG2}?2
 			if (isset($arguments[$argNum][1])) {
 				$val .= '?' . $arguments[$argNum][1];
 			}
+
+			$val .= '}';
 
 		}
 

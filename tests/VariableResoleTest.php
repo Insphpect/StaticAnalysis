@@ -211,7 +211,32 @@ class TestClass implements Foo {
 
 		$result = $resolver->resolve($code, '$a', 10);
 
-		$this->assertEquals('{ARG0}?1', $result);
+		$this->assertEquals('{ARG0?1}', $result);
 
 	}
+
+
+	public function testArgProperty() {
+
+		$code = '<?php
+class TestClass implements Foo {
+	private $a = 4;
+	private $b;
+
+	public function __construct() {
+		$ff = 1;
+		$this->b = new RequiresObject($this->a);
+	}
+}';
+
+
+
+		$resolver = new \Insphpect\StaticAnalysis\VariableResolve();
+
+		$result = $resolver->resolve($code, '$this->a', 10);
+
+		$this->assertEquals('4', $result);
+
+	}
+
 }
